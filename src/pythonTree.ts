@@ -17,15 +17,12 @@ export class PythonTreeProvider implements vscode.TreeDataProvider<PythonTreeIte
         if (element) {
             return element.getChildren();
         } else {
-            const testPath = 'test.py';
-            try {
-                fs.accessSync(testPath);
-            } catch (err) {
-                console.log('Path ', testPath, ' does not exist.');
-                throw err;
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                return [];
             }
-            console.log('Path ', testPath, ' exists.');
-            const sourceCode = fs.readFileSync(testPath).toString();
+            const currPath = editor.document.fileName;
+            const sourceCode = fs.readFileSync(currPath).toString();
             console.log(sourceCode);
 
             const tree = this.parser.parse(sourceCode);
