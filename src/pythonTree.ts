@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 
 import * as Parser from 'web-tree-sitter';
 
-export class PythonTreeProvider implements vscode.TreeDataProvider<string> {
+export class PythonTreeProvider implements vscode.TreeDataProvider<PythonTreeItem> {
     parser?: Parser
 
     constructor() {
@@ -23,13 +23,13 @@ export class PythonTreeProvider implements vscode.TreeDataProvider<string> {
         console.log("python provider initialized");
     }
 
-    getTreeItem(element: string): vscode.TreeItem | Thenable<vscode.TreeItem> {
-        return new vscode.TreeItem(element);
+    getTreeItem(element: PythonTreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
+        return element;
     }
 
-    getChildren(element?: string | undefined): vscode.ProviderResult<string[]> {
+    getChildren(element?: PythonTreeItem | undefined): vscode.ProviderResult<PythonTreeItem[]> {
         if (element) {
-            // TODO
+            return element.getChildren();
         } else {
             const testPath = 'test.py';
             try {
@@ -44,7 +44,17 @@ export class PythonTreeProvider implements vscode.TreeDataProvider<string> {
 
             const tree = this.parser.parse(sourceCode);
             const rootNode = tree.rootNode;
-            return [rootNode.type];
+            return [new PythonTreeItem(rootNode)];
         }
+    }
+}
+
+class PythonTreeItem extends vscode.TreeItem {
+    constructor(private node: Parser.SyntaxNode) {
+        super(node.type, node.children.length > 0 ? vscode.TreeItemCollapsibleState.Collapsed: vscode.TreeItemCollapsibleState.None);
+    }
+
+    getChildren(): PythonTreeItem[] {
+        return this.node.children.map((child) => new PythonTreeItem(child) )
     }
 }
