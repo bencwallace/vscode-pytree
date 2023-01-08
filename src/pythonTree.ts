@@ -1,26 +1,12 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import * as vscode from 'vscode';
 
 import * as Parser from 'web-tree-sitter';
 
 export class PythonTreeProvider implements vscode.TreeDataProvider<PythonTreeItem> {
-    parser?: Parser
-
-    constructor() {
+    constructor(private parser: Parser, language: Parser.Language) {
         console.log("constructing python provider");
-        this.parser = undefined;
-    }
-
-    async initParser() {
-        console.log("initializing python provider");
-        await Parser.init();
-        this.parser = new Parser();
-        const pythonPath = path.join(__dirname, "tree-sitter-python.wasm");
-        console.log(`loading python language from ${pythonPath}`)
-        const Python = await Parser.Language.load(pythonPath);
-        this.parser.setLanguage(Python);
-        console.log("python provider initialized");
+        this.parser.setLanguage(language);
     }
 
     getTreeItem(element: PythonTreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
